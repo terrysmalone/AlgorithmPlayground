@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace FloodFill;
+namespace FloodFillAlgorithm;
 
 internal class FloodFill
 {
@@ -22,6 +22,7 @@ internal class FloodFill
         var visited = new HashSet<Point>();
         var toCheck = new Queue<Point>();
 
+        visited.Add(point);
         toCheck.Enqueue(point);
 
         while (toCheck.Count > 0)
@@ -39,10 +40,11 @@ internal class FloodFill
             }
         }
 
-        return visited.Count;
+        // -1 because we don't count the initial point
+        return visited.Count - 1;
     }
 
-    private IEnumerable<Point> GetAdjacentPoints(Point checkPoint)
+    private List<Point> GetAdjacentPoints(Point checkPoint)
     {
         var adjacentPoints = new List<Point>();
 

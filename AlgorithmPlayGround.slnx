@@ -1,3 +1,4 @@
 <Solution>
-  <Project Path="FloodFill/FloodFill.csproj" />
+  <Project Path="FloodFill/FloodFillAlgorithm.csproj" />
+  <Project Path="FloodFillTests/FloodFillAlgorithmTests.csproj" />
 </Solution>
