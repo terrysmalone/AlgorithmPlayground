@@ -2,16 +2,16 @@
 
 namespace FloodFillAlgorithm;
 
-internal class FloodFill
+public class FloodFill
 {
     private readonly bool[,] _grid;
 
-    internal FloodFill(bool[,] grid)
+    public FloodFill(bool[,] grid)
     {
         _grid = grid;
     }
 
-    internal int GetAvailableSpace(Point point)
+    public int GetAvailableSpace(Point point)
     {
         // Bounds check
         if (point.X < 0 || point.X >= _grid.GetLength(0) || point.Y < 0 || point.Y >= _grid.GetLength(1))
