@@ -45,14 +45,10 @@ public class MiniMax : IMiniMax
 
     private int MiniMaxRecursive(GameState gameState, int depth)
     {
-        if (depth <= 0)
+        if (depth <= 0 || gameState.IsTerminal())
         {
-            return gameState.CalculateScore();
-        }
-
-        if (gameState.IsTerminal())
-        {
-            return gameState.CalculateScore();
+            int score = gameState.CalculateScore();
+            return score + (Math.Sign(score) * depth);
         }
 
         List<int> validMoves = gameState.GetValidMoves();
