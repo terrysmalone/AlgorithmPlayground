@@ -18,68 +18,56 @@ public class MiniMax : IMiniMax
 
         foreach (int move in gameState.GetValidMoves())
         {
+            // Make the move, recursively evaluate the game state, then undo the move
             gameState.ApplyMove(move);
             int score = MiniMaxRecursive(gameState, depth - 1);
             gameState.UndoLastMove();
 
-            if (gameState.CurrentPlayer == 1)
+
+            // If it's player 1, we want the highest score, if it's player -1, we want the lowest score
+            if ((gameState.CurrentPlayer == 1 && score > bestScore)
+                || (gameState.CurrentPlayer == -1 && score < bestScore))
             {
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    bestMove = move;
-                }
-            }
-            else
-            {
-                if (score < bestScore)
-                {
-                    bestScore = score;
-                    bestMove = move;
-                }
+                bestScore = score;
+                bestMove = move;
             }
         }
 
         return bestMove;
     }
 
-    private int MiniMaxRecursive(GameState gameState, int depth)
+    private static int MiniMaxRecursive(GameState gameState, int depth)
     {
+        // If we've hit the depth limit or the game is over, return the score
         if (depth <= 0 || gameState.IsTerminal())
         {
             int score = gameState.CalculateScore();
             return score + (Math.Sign(score) * depth);
         }
 
+        int bestScore = int.MinValue;
+        if (gameState.CurrentPlayer == -1)
+        {
+            bestScore = int.MaxValue;
+        }
+
         List<int> validMoves = gameState.GetValidMoves();
 
-        if ( gameState.CurrentPlayer == 1)
+        foreach (int move in validMoves)
         {
-            int maxScore = int.MinValue;
+            // Make the move, recursively evaluate the game state, then undo the move
+            gameState.ApplyMove(move);
+            int score = MiniMaxRecursive(gameState, depth - 1);
+            gameState.UndoLastMove();
 
-            foreach (int move in validMoves)
+            // If it's player 1, we want the highest score, if it's player -1, we want the lowest score
+            if ((gameState.CurrentPlayer == 1 && score > bestScore)
+                || (gameState.CurrentPlayer == -1 && score < bestScore))
             {
-                gameState.ApplyMove(move);
-                int score = MiniMaxRecursive(gameState, depth - 1);
-                gameState.UndoLastMove();
-
-                maxScore = Math.Max(maxScore, score);
+                bestScore = score;
             }
-            return maxScore;
         }
-        else
-        {
-            int minScore = int.MaxValue;
 
-            foreach (int move in validMoves)
-            {
-                gameState.ApplyMove(move);
-                int score = MiniMaxRecursive(gameState, depth - 1);
-                gameState.UndoLastMove();
-
-                minScore = Math.Min(minScore, score);
-            }
-            return minScore;
-        }
+        return bestScore;        
     }
 }
