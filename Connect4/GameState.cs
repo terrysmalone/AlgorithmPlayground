@@ -112,9 +112,9 @@ public class GameState
         CurrentPlayer = prevPlayer;
     }
 
-    public bool IsTerminal(out int winScore)
+    public bool IsTerminal()
     {
-        winScore = CheckForWinner();
+        int winScore = CheckForWinner();
 
         if (winScore != 0)
         {
@@ -193,11 +193,8 @@ public class GameState
         int score = 0;
 
         score = CheckForWinner();
+        score *= TERMINAL_SCORE;
 
-        if (score != 0)
-        {
-            return score * TERMINAL_SCORE;
-        }
 
         // TODO: Add heuristics for non-terminal states
         

@@ -50,9 +50,9 @@ public class MiniMax : IMiniMax
             return gameState.CalculateScore();
         }
 
-        if (gameState.IsTerminal(out int winScore))
+        if (gameState.IsTerminal())
         {
-            return winScore;
+            return gameState.CalculateScore();
         }
 
         List<int> validMoves = gameState.GetValidMoves();
