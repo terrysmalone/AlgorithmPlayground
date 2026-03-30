@@ -291,4 +291,27 @@ public class MiniMaxTests
     }
 
     #endregion
+
+    [Test]
+    public void Chooses_Faster_Win_Over_Slower_Win()
+    {
+        // player 1 can force a win in 3 by playing 3, but 5 gives an immediate win
+        int[,] board = new int[,]
+        {
+            {  0,  0,  0, 0,  0, 0,  0 },
+            { -1,  0, -1, 0,  0, 0,  0 },
+            { -1, -1, -1, 0,  0, 0,  0 },
+            {  1,  1,  1, 0,  0, 1,  0 },
+            {  1,  1,  1, 0, -1, 1, -1 },
+            {  1, -1,  1, 0, -1, 1, -1 }
+        };
+
+        GameState boardState = new GameState();
+        boardState.SetGameState(board, 1);
+
+        MiniMax minimax = new MiniMax();
+        int bestMove = minimax.FindBestMove(boardState, 3);
+
+        Assert.AreEqual(5, bestMove);
+    }
 }
