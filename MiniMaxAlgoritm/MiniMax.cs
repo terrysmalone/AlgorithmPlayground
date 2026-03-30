@@ -45,7 +45,7 @@ public class MiniMax : IMiniMax
 
     private int MiniMaxRecursive(GameState gameState, int depth)
     {
-        if (depth < 0)
+        if (depth <= 0)
         {
             return gameState.CalculateScore();
         }
