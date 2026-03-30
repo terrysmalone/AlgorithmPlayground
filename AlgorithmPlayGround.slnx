@@ -1,5 +1,11 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="AlgorithmBenchmarks/AlgorithmBenchmarks.csproj" Id="fe68c43f-fee3-4683-b1cd-41f615f9fee7" />
+  <Project Path="Connect4/Connect4.csproj" Id="c627b768-d60c-49aa-81a0-3018bf94f034" />
   <Project Path="FloodFill/FloodFillAlgorithm.csproj" />
   <Project Path="FloodFillTests/FloodFillAlgorithmTests.csproj" />
+  <Project Path="MiniMaxAlgorithmTests/MiniMaxAlgorithmTests.csproj" Id="8ea20d6d-9fba-4782-b0ca-83c87bdb68b6" />
+  <Project Path="MiniMaxAlgoritm/MiniMaxAlgoritm.csproj" Id="693ddffe-bdd8-488e-b68a-d4c2dbcc6c2b" />
 </Solution>
