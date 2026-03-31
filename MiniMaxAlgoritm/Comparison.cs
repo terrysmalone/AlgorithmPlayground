@@ -9,7 +9,7 @@ internal class Comparison
 {
     public static void Main(string[] args)
     {
-        int depth = 4;
+        int depth = 5;
 
         int[,] board = new int[6, 7];
 

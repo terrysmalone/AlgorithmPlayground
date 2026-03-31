@@ -138,7 +138,7 @@ public class AlphaBetaMiniMax : IMiniMax
     {        
         moves.Sort((a, b) =>
         {
-            int middle = 4;
+            int middle = 3;
             int distanceA = Math.Abs(a - middle);
             int distanceB = Math.Abs(b - middle);
             return distanceA.CompareTo(distanceB);

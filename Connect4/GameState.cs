@@ -272,20 +272,18 @@ public class GameState
     private int CentralColumnsScore()
     {
         int score = 0;
-        for (int column = 3; column <= 5; column++)
+        
+        for (int row = 0; row < _rows; row++)
         {
-            for (int row = 0; row < _rows; row++)
+            if (_board[row, 3] == 1)
             {
-                if (_board[row, column] == 1)
-                {
-                    score += CENTRAL_COLUMNS_SCORE;
-                }
-                else if (_board[row, column] == -1)
-                {
-                    score -= CENTRAL_COLUMNS_SCORE;
-                }
+                score += CENTRAL_COLUMNS_SCORE;
             }
-        }
+            else if (_board[row, 3] == -1)
+            {
+                score -= CENTRAL_COLUMNS_SCORE;
+            }
+        }        
 
         return score;
     }
