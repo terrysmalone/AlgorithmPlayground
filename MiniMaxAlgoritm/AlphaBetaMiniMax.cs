@@ -6,6 +6,8 @@ public class AlphaBetaMiniMax : IMiniMax
 {
     private int _nodesVisited = 0;
 
+    public bool ApplyMoveOrdering { get; set; }
+
     public int FindBestMove(GameState gameState, int depth)
     {
         _nodesVisited = 0;
@@ -22,7 +24,14 @@ public class AlphaBetaMiniMax : IMiniMax
 
         int bestMove = -1;
 
-        foreach (int move in gameState.GetValidMoves())
+        List<int> moves = gameState.GetValidMoves();
+
+        if (ApplyMoveOrdering)
+        {
+            OrderMoves(moves);
+        }
+
+        foreach (int move in moves)
         {
             // Make the move, recursively evaluate the game state, then undo the move
             gameState.ApplyMove(move);
@@ -64,14 +73,19 @@ public class AlphaBetaMiniMax : IMiniMax
             int score = gameState.CalculateScore();
             return score + (Math.Sign(score) * depth);
         }
-        
-        List<int> validMoves = gameState.GetValidMoves();
+
+        List<int> moves = gameState.GetValidMoves();
+
+        if (ApplyMoveOrdering)
+        {
+            OrderMoves(moves);
+        }
 
         if (gameState.CurrentPlayer == 1)
         {
             bestScore = int.MinValue;
 
-            foreach (int move in validMoves)
+            foreach (int move in moves)
             {
                 // Make the move, recursively evaluate the game state, then undo the move
                 gameState.ApplyMove(move);
@@ -95,7 +109,7 @@ public class AlphaBetaMiniMax : IMiniMax
         {
             bestScore = int.MaxValue;
                 
-            foreach (int move in validMoves)
+            foreach (int move in moves)
             {
                 // Make the move, recursively evaluate the game state, then undo the move
                 gameState.ApplyMove(move);
@@ -117,6 +131,18 @@ public class AlphaBetaMiniMax : IMiniMax
         }
 
         return bestScore;        
+    }
+
+    // Very basic move ordering that prioritises being closer to the middle column
+    private void OrderMoves(List<int> moves)
+    {        
+        moves.Sort((a, b) =>
+        {
+            int middle = 4;
+            int distanceA = Math.Abs(a - middle);
+            int distanceB = Math.Abs(b - middle);
+            return distanceA.CompareTo(distanceB);
+        });
     }
 
     public int GetNodesVisited()

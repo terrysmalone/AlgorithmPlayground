@@ -5,7 +5,17 @@ using NUnit.Framework;
 
 namespace MiniMaxAlgorithmTests;
 
+[TestFixture(false)]
+[TestFixture(true)]
 public class AlphaBetaMiniMaxTests : MiniMaxTestBase
 {
-    protected override IMiniMax CreateMiniMax() => new MiniMax();
+    private readonly bool _applyMoveOrdering;
+
+    public AlphaBetaMiniMaxTests(bool applyMoveOrdering)
+    {
+        _applyMoveOrdering = applyMoveOrdering;
+    }
+
+    protected override IMiniMax CreateMiniMax() =>
+        new AlphaBetaMiniMax { ApplyMoveOrdering = _applyMoveOrdering };
 }
