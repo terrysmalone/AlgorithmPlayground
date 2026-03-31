@@ -4,8 +4,12 @@ namespace MiniMaxAlgoritm;
 
 public class MiniMax : IMiniMax
 {
+    private int _nodesVisited = 0;
+
     public int FindBestMove(GameState gameState, int depth)
     {
+        _nodesVisited = 0;
+
         // If it's player 1s turn we want to maximise the score,
         // if it's player -1s turn we want to minimise the score
         int bestScore = int.MinValue;
@@ -36,8 +40,10 @@ public class MiniMax : IMiniMax
         return bestMove;
     }
 
-    private static int MiniMaxRecursive(GameState gameState, int depth)
+    private int MiniMaxRecursive(GameState gameState, int depth)
     {
+        _nodesVisited++;
+
         // If we've hit the depth limit or the game is over, return the score
         if (depth <= 0 || gameState.IsTerminal())
         {
@@ -68,6 +74,11 @@ public class MiniMax : IMiniMax
             }
         }
 
-        return bestScore;        
+        return bestScore;
+    }
+
+    public int GetNodesVisited()
+    {
+        return _nodesVisited;
     }
 }

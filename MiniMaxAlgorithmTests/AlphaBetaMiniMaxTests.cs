@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace MiniMaxAlgorithmTests;
 
-public class MiniMaxTests : MiniMaxTestBase
+public class AlphaBetaMiniMaxTests : MiniMaxTestBase
 {
-    protected override IMiniMax CreateMiniMax() => new AlphaBetaMiniMax();
+    protected override IMiniMax CreateMiniMax() => new MiniMax();
 }
