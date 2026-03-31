@@ -5,8 +5,8 @@ using NUnit.Framework;
 
 namespace MiniMaxAlgorithmTests;
 
-[TestFixture(false)]
-[TestFixture(true)]
+[TestFixture(false, TestName = "AlphaBeta_WithoutMoveOrdering")]
+[TestFixture(true, TestName = "AlphaBeta_WithMoveOrdering")]
 public class AlphaBetaMiniMaxTests : MiniMaxTestBase
 {
     private readonly bool _applyMoveOrdering;
