@@ -1,4 +1,5 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿using System.Drawing;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Connect4;
 
@@ -14,18 +15,83 @@ public class GameState
     private int _lastMoveRow = -1; 
 
     private Stack<(int row, int column, int prevPlayer)> _moveHistory = new Stack<(int row, int column, int prevPlayer)>();
-    
-    private const int TERMINAL_SCORE = 1000;
-    private const int FOUR_IN_A_ROW_WITH_GAP_SCORE = 50;
-    private const int THREE_IN_A_ROW_SCORE = 30;
-    private const int TWO_IN_A_ROW_SCORE = 10;
-    private const int CENTRAL_COLUMN_SCORE = 3;
+
+    private List<Point[]> _windows = new List<Point[]>();
+
+    private const int TERMINAL_SCORE = 10000;
+    private const int THREE_OF_FOUR_SCORE = 100;
+    private const int TWO_OF_FOUR_SCORE = 30;
+    private const int CENTRAL_COLUMNS_SCORE = 3;
 
     public GameState(int rows = 6, int columns = 7) 
     {
         _rows = rows;
         _columns = columns;
         _board = new int[_rows, _columns];
+
+        PreComputeWindows();
+    }
+
+    private void PreComputeWindows()
+    {
+        // Horizontal windows
+        for (int row = 0; row < _rows; row++)
+        {
+            for (int column = 0; column < _columns - 3; column++)
+            {
+                _windows.Add(new Point[]
+                {
+                    new Point(row, column),
+                    new Point(row, column + 1),
+                    new Point(row, column + 2),
+                    new Point(row, column + 3),
+                });
+            }
+        }
+
+        // Vertical windows
+        for (int row = 0; row < _rows - 3; row++)            
+        {
+            for (int column = 0; column < _columns; column++)
+            {
+                _windows.Add(new Point[]
+                {
+                    new Point(row, column),
+                    new Point(row + 1, column),
+                    new Point(row + 2, column),
+                    new Point(row + 3, column),
+                });
+
+            }
+        }
+        // Diagonal down-right windows
+        for (int row = 0; row < _rows - 3; row++)
+        {
+            for (int column = 0; column < _columns - 3; column++)
+            {
+                _windows.Add(new Point[]
+                {
+                    new Point(row, column),
+                    new Point(row + 1, column + 1),
+                    new Point(row + 2, column + 2),
+                    new Point(row + 3, column + 3),
+                });
+            }
+        }
+        // Diagonal up-right windows
+        for (int row = 3; row < _rows; row++)
+        {
+            for (int column = 0; column < _columns - 3; column++)
+            {
+                _windows.Add(new Point[]
+                {
+                    new Point(row, column),
+                    new Point(row - 1, column + 1),
+                    new Point(row - 2, column + 2),
+                    new Point(row - 3, column + 3),
+                });
+            }
+        }
     }
 
     // Set the game state to a specific board and player, used for testing
@@ -134,6 +200,7 @@ public class GameState
         return true;
     }
 
+    // TODO: Check for winner should use the windows
     private int CheckForWinner()
     {
         for (int row = 0; row < _rows; row++)
@@ -195,9 +262,87 @@ public class GameState
         score = CheckForWinner();
         score *= TERMINAL_SCORE;
 
+        score += CentralColumnsScore();
 
-        // TODO: Add heuristics for non-terminal states
-        
+        score += WindowScores();
+
+        return score;
+    }
+
+    private int CentralColumnsScore()
+    {
+        int score = 0;
+        for (int column = 3; column <= 5; column++)
+        {
+            for (int row = 0; row < _rows; row++)
+            {
+                if (_board[row, column] == 1)
+                {
+                    score += CENTRAL_COLUMNS_SCORE;
+                }
+                else if (_board[row, column] == -1)
+                {
+                    score -= CENTRAL_COLUMNS_SCORE;
+                }
+            }
+        }
+
+        return score;
+    }
+
+    private int WindowScores()
+    {
+        int score = 0;
+
+        foreach (Point[] window in _windows)
+        {
+            score += WindowScore(window);
+        }
+
+        return score;
+    }
+
+    private int WindowScore(Point[] window)
+    {
+        int score = 0;
+
+        int player1Count = 0;
+        int player2Count = 0;
+        int emptyCount = 0;
+
+        foreach (Point point in window)
+        {
+            switch (_board[point.X, point.Y])
+            {
+                case 0:
+                    emptyCount++;
+                    break;
+                case 1:
+                    player1Count++;
+                    break;
+                case -1:
+                    player2Count++;
+                    break;
+            }
+        }
+
+        if (player1Count == 3 && emptyCount == 1)
+        {
+            score += THREE_OF_FOUR_SCORE;
+        }
+        else if (player1Count == 2 && emptyCount == 2)
+        {
+            score += TWO_OF_FOUR_SCORE;
+        }
+        else if (player2Count == 3 && emptyCount == 1)
+        {
+            score -= THREE_OF_FOUR_SCORE;
+        }
+        else if (player2Count == 2 && emptyCount == 2)
+        {
+            score -= TWO_OF_FOUR_SCORE;
+        }
+
         return score;
     }
 }
