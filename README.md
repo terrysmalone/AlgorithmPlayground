@@ -21,3 +21,7 @@ The steps for the algorithm are as follows:
 2. For each valid move, apply the move, recursively call MiniMax with the depth decreased by 1 and the player switched, then undo the move. Applying and undoing moves is handled by `Connect4.GameState`.
 3. If the current player is the maximizing player, return the maximum value of the recursive calls. If the current player is the minimizing player, return the minimum value of the recursive calls.
 4. If the depth is 0 or the game is over, return the score of the board state.
+
+`AlphaBetaMiniMax` is a direct copy of `MiniMax` with the addition of alpha-beta pruning (both will be kept for comparison). This class has a number of configurable optimisations that can be flagged on or off, again for comparison.
+
+`ApplyMoveOrdering` - Applies a basic move ordering heuristic to the valid moves to improve the pruning efficiency of the alpha beta algorithm. The orders by moves that are closest to the centre column since, in Connect 4, moves in the centre are generally better.
