@@ -8,19 +8,39 @@ internal class Comparison
     {
         int depth = 7;
 
-        int[,] board = new int[6, 7];
+        int[,] emptyBoard = new int[6, 7];
+        GameState emptyBoardgameState = new GameState();
+        emptyBoardgameState.SetGameState(emptyBoard, 1);
 
-        GameState gameState = new GameState();
-        gameState.SetGameState(board, 1);
+        DoFullRun(emptyBoardgameState, depth, "Empty Board");
 
+        int[,] complexBoard = new int[6, 7]
+        {
+            {  0,  0,  0,  0,  0,  0,  0 },
+            {  0,  0,  0,  0,  0,  0,  0 },
+            {  0,  0, -1,  1,  0,  0,  0 },
+            {  0,  1,  1, -1,  0,  0,  0 },
+            {  0, -1, -1,  1,  1,  0,  0 },
+            {  1,  1, -1, -1,  1, -1,  0 }
+        };
+
+        GameState complexBoardgameState = new GameState();
+        complexBoardgameState.SetGameState(complexBoard, 1);
+
+        DoFullRun(complexBoardgameState, depth, "Complex Board");
+    }
+
+    private static void DoFullRun(GameState gameState, int depth, string title)
+    {
+        Console.WriteLine(title);
         MiniMax minimax = new MiniMax();
         int bestMove = minimax.FindBestMove(gameState, depth);
         Console.WriteLine($"Best move: {bestMove} - Nodes visited: {minimax.GetNodesVisited()} - MiniMax");
 
         RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: false, transpositionTable: false, "AlphaBeta");
-        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: true,  transpositionTable: false, "AlphaBeta + MoveOrdering");
-        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: false, transpositionTable: true,  "AlphaBeta + TranspositionTable");
-        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: true,  transpositionTable: true,  "AlphaBeta + MoveOrdering + TranspositionTable");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: true, transpositionTable: false, "AlphaBeta + MoveOrdering");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: false, transpositionTable: true, "AlphaBeta + TranspositionTable");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: true, transpositionTable: true, "AlphaBeta + MoveOrdering + TranspositionTable");
     }
 
     private static void RunAlphaBetaMiniMax(GameState gameState, int depth, bool moveOrdering, bool transpositionTable, string title)
