@@ -5,12 +5,16 @@ namespace MiniMaxAlgoritm;
 public class AlphaBetaMiniMax : IMiniMax
 {
     private int _nodesVisited = 0;
+    private readonly Dictionary<ulong, TranspositionEntry> _transpositionTable = new();
 
     public bool ApplyMoveOrdering { get; set; }
+    public bool ApplyTranspositionTable { get; set; }
 
     public int FindBestMove(GameState gameState, int depth)
     {
         _nodesVisited = 0;
+        _transpositionTable.Clear();
+
         // If it's player 1s turn we want to maximise the score,
         // if it's player -1s turn we want to minimise the score
         int bestScore = int.MinValue;
@@ -63,9 +67,39 @@ public class AlphaBetaMiniMax : IMiniMax
 
     private int MiniMaxRecursive(GameState gameState, int depth, int alpha, int beta)
     {
-        _nodesVisited++;
+        int originalAlpha = alpha;
+        int originalBeta = beta;
 
-        int bestScore = 0;
+        // Transposition table lookup
+        ulong hash = 0;
+        if (ApplyTranspositionTable)
+        {
+            hash = gameState.GetHash();
+            if (_transpositionTable.TryGetValue(hash, out TranspositionEntry entry) && entry.Depth >= depth)
+            {
+                if (entry.Type == EntryType.Exact)
+                {
+                    return entry.Score;
+                }
+                if (entry.Type == EntryType.LowerBound)
+                {
+                    alpha = Math.Max(alpha, entry.Score);
+                }
+                else if (entry.Type == EntryType.UpperBound)
+                {
+                    beta = Math.Min(beta, entry.Score);
+                }
+
+                // The refined window still allows a cutoff
+                if (beta <= alpha)
+                {
+                    return entry.Score;
+                }
+            }
+        }
+
+        // Do this after doing the transposition table look up because we only want to measure the evaluated nodes
+        _nodesVisited++;
 
         // If we've hit the depth limit or the game is over, return the score
         if (depth <= 0 || gameState.IsTerminal())
@@ -80,6 +114,8 @@ public class AlphaBetaMiniMax : IMiniMax
         {
             OrderMoves(moves);
         }
+
+        int bestScore;
 
         if (gameState.CurrentPlayer == 1)
         {
@@ -127,6 +163,34 @@ public class AlphaBetaMiniMax : IMiniMax
                 {
                     break;
                 }
+            }
+        }
+
+        // Store the result, classifying the score relative to the original window
+        if (ApplyTranspositionTable)
+        {
+            EntryType entryType;
+
+            if (bestScore <= originalAlpha)
+            {
+                // failed low - couldn't beat alpha
+                entryType = EntryType.UpperBound;
+            }
+            else if (bestScore >= originalBeta)
+            {
+                // failed high - caused beta cutoff
+                entryType = EntryType.LowerBound;  
+            }
+            else
+            {
+                // within the window
+                entryType = EntryType.Exact; 
+            }
+
+            // Only overwrite if the new entry searched deeper
+            if (!_transpositionTable.TryGetValue(hash, out TranspositionEntry existing) || depth >= existing.Depth)
+            {
+                _transpositionTable[hash] = new TranspositionEntry(bestScore, depth, entryType);
             }
         }
 

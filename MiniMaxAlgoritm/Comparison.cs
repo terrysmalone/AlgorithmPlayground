@@ -1,7 +1,4 @@
 ﻿using Connect4;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MiniMaxAlgoritm;
 
@@ -9,30 +6,30 @@ internal class Comparison
 {
     public static void Main(string[] args)
     {
-        int depth = 5;
+        int depth = 7;
 
         int[,] board = new int[6, 7];
 
         GameState gameState = new GameState();
         gameState.SetGameState(board, 1);
 
-        // We shouldn't have to clone it but lets be safe
-        GameState abGameState = gameState.Clone();
-
         MiniMax minimax = new MiniMax();
         int bestMove = minimax.FindBestMove(gameState, depth);
-        Console.WriteLine($"MiniMax - Best move: {bestMove} - Nodes visited: {minimax.GetNodesVisited()}");
+        Console.WriteLine($"Best move: {bestMove} - Nodes visited: {minimax.GetNodesVisited()} - MiniMax");
 
-        AlphaBetaMiniMax(gameState.Clone(), depth, applyMoveOrdering: false, "AlphaBetaMiniMax");
-        AlphaBetaMiniMax(gameState.Clone(), depth, applyMoveOrdering: true, "AlphaBetaMiniMax with move ordering");
-
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: false, transpositionTable: false, "AlphaBeta");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: true,  transpositionTable: false, "AlphaBeta + MoveOrdering");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: false, transpositionTable: true,  "AlphaBeta + TranspositionTable");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: true,  transpositionTable: true,  "AlphaBeta + MoveOrdering + TranspositionTable");
     }
 
-    private static void AlphaBetaMiniMax(GameState gameState, int depth, bool applyMoveOrdering, string title)
+    private static void RunAlphaBetaMiniMax(GameState gameState, int depth, bool moveOrdering, bool transpositionTable, string title)
     {
-        AlphaBetaMiniMax alphaBetaMiniMax = new AlphaBetaMiniMax();
-        alphaBetaMiniMax.ApplyMoveOrdering = applyMoveOrdering;
-        int bestMove = alphaBetaMiniMax.FindBestMove(gameState, depth);
-        Console.WriteLine($"{title} - Best move: {bestMove} - Nodes visited: {alphaBetaMiniMax.GetNodesVisited()}");
+        AlphaBetaMiniMax alphaBeta = new AlphaBetaMiniMax();
+        alphaBeta.ApplyMoveOrdering = moveOrdering;
+        alphaBeta.ApplyTranspositionTable = transpositionTable;
+
+        int bestMove = alphaBeta.FindBestMove(gameState, depth);
+        Console.WriteLine($"Best move: {bestMove} - Nodes visited: {alphaBeta.GetNodesVisited()} - {title}");
     }
 }

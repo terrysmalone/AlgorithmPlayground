@@ -1,5 +1,5 @@
-﻿using System.Drawing;
-using System.Reflection.Metadata.Ecma335;
+﻿using System.CodeDom.Compiler;
+using System.Drawing;
 
 namespace Connect4;
 
@@ -11,9 +11,6 @@ public class GameState
     private int _columns = 7;
     private int _rows = 6;
 
-    private int _lastMoveColumn = -1;
-    private int _lastMoveRow = -1; 
-
     private Stack<(int row, int column, int prevPlayer)> _moveHistory = new Stack<(int row, int column, int prevPlayer)>();
 
     private List<Point[]> _windows = new List<Point[]>();
@@ -23,13 +20,44 @@ public class GameState
     private const int TWO_OF_FOUR_SCORE = 30;
     private const int CENTRAL_COLUMNS_SCORE = 3;
 
-    public GameState(int rows = 6, int columns = 7) 
+    // Transposition table fields 
+    private readonly int _zobristSeed;
+    private ulong[] _zobristPlayer1;
+    private ulong[] _zobristPlayer2;
+    private ulong _zobristPlayerTurn;
+    private ulong _hash;
+
+    public GameState(int rows = 6, int columns = 7, int zobristSeed = -1) 
     {
         _rows = rows;
         _columns = columns;
         _board = new int[_rows, _columns];
 
+        _zobristSeed = zobristSeed == -1 ? Random.Shared.Next() : zobristSeed;
+
+        GenerateZobristValues();
+
         PreComputeWindows();
+    }
+
+    private void GenerateZobristValues()
+    {
+        // Use a fixed seed for reproducibility
+        var rand = new Random(_zobristSeed);
+
+        _zobristPlayer1 = new ulong[_rows * _columns];
+        _zobristPlayer2 = new ulong[_rows * _columns];
+
+        // Generate a random 64-bit number for each cell and player combination
+        for (int i = 0; i < _rows * _columns; i++)
+        {
+            _zobristPlayer1[i] = (ulong)rand.NextInt64();
+            _zobristPlayer2[i] = (ulong)rand.NextInt64();
+        }
+        _zobristPlayerTurn = (ulong)rand.NextInt64();
+
+        // Empty board, player 1 to move
+        _hash = _zobristPlayerTurn;
     }
 
     private void PreComputeWindows()
@@ -99,13 +127,14 @@ public class GameState
     {
         _board = board;
         CurrentPlayer = currentPlayer;
+        RecomputeHash();
     }
-
 
     public void SetGameStateFromPlay(List<int> moves)
     {
         _board = new int[_rows, _columns];
         CurrentPlayer = 1;
+        _hash = _zobristPlayerTurn; // reset to player 1's turn on empty board
 
         foreach (int move in moves)
         {
@@ -128,6 +157,20 @@ public class GameState
 
         _board[firstEmpty, move] = CurrentPlayer;
 
+        // Update hash - XOR the placed piece and toggle the player turn
+        int cellIndex = firstEmpty * _columns + move;
+
+        if (CurrentPlayer == 1)
+        {
+            _hash ^= _zobristPlayer1[cellIndex];
+        }
+        else
+        {
+            _hash ^= _zobristPlayer2[cellIndex];
+        }
+
+        _hash ^= _zobristPlayerTurn;
+
         _moveHistory.Push((firstEmpty, move, CurrentPlayer));
 
         CurrentPlayer = -CurrentPlayer;
@@ -135,7 +178,7 @@ public class GameState
 
     public GameState Clone()
     {
-        var newState = new GameState();
+        var newState = new GameState(_rows, _columns, _zobristSeed);
 
         for (int i = 0; i < _board.GetLength(0); i++)
         {
@@ -144,7 +187,11 @@ public class GameState
                 newState._board[i, j] = _board[i, j];
             }
         }
-        newState.CurrentPlayer = CurrentPlayer;
+
+        newState.CurrentPlayer = CurrentPlayer;  
+        newState._hash = _hash;
+
+        newState._moveHistory = new Stack<(int row, int column, int prevPlayer)>(_moveHistory.Reverse());
 
         return newState;
     }
@@ -174,9 +221,25 @@ public class GameState
 
         (var lastMoveRow, var lastMoveColumn, int prevPlayer) = _moveHistory.Pop();
 
+        // Update hash - XOR out the removed piece and toggle the player turn
+        int cellIndex = lastMoveRow * _columns + lastMoveColumn;
+
+        if (prevPlayer == 1)
+        {
+            _hash ^= _zobristPlayer1[cellIndex];
+        }
+        else
+        {
+            _hash ^= _zobristPlayer2[cellIndex];
+        }
+
+        _hash ^= _zobristPlayerTurn;
+
         _board[lastMoveRow, lastMoveColumn] = 0;
         CurrentPlayer = prevPlayer;
     }
+
+    public ulong GetHash() => _hash;
 
     public bool IsTerminal()
     {
@@ -342,5 +405,32 @@ public class GameState
         }
 
         return score;
+    }
+
+    private void RecomputeHash()
+    {
+        _hash = 0;
+
+        for (int row = 0; row < _rows; row++)
+        {
+            for (int col = 0; col < _columns; col++)
+            {
+                int cellIndex = row * _columns + col;
+
+                if (_board[row, col] == 1)
+                {
+                    _hash ^= _zobristPlayer1[cellIndex];
+                }
+                else if (_board[row, col] == -1)
+                {
+                    _hash ^= _zobristPlayer2[cellIndex];
+                }
+            }
+        }
+
+        if (CurrentPlayer == 1)
+        {
+            _hash ^= _zobristPlayerTurn;
+        }
     }
 }
