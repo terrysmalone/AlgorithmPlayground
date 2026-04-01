@@ -10,7 +10,21 @@ public class AlphaBetaMiniMax : IMiniMax
     public bool ApplyMoveOrdering { get; set; }
     public bool ApplyTranspositionTable { get; set; }
 
+    public bool ApplyIterativeDeepening { get; set; }
+
     public int FindBestMove(GameState gameState, int depth)
+    {
+        if (!ApplyIterativeDeepening)
+        {
+            return FindBestMoveStandard(gameState, depth);
+        }
+        else
+        {
+            return FindBestMoveWithIterativeDeepening(gameState, depth);
+        }
+    }
+
+    private int FindBestMoveStandard(GameState gameState, int depth)
     {
         _nodesVisited = 0;
         _transpositionTable.Clear();
@@ -59,6 +73,81 @@ public class AlphaBetaMiniMax : IMiniMax
             else
             {
                 beta = Math.Min(beta, bestScore);
+            }
+        }
+
+        return bestMove;
+    }
+
+    private int FindBestMoveWithIterativeDeepening(GameState gameState, int depth)
+    {
+        _nodesVisited = 0;
+
+        // Clear once at the start so TT entries carry over between depth iterations,
+        // allowing shallower searches to improve pruning in deeper ones
+        _transpositionTable.Clear();
+
+        int bestMove = -1;
+
+        // Scores from the previous iteration, used to order moves for the next one
+        Dictionary<int, int> prevIterationScores = new();
+
+        for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
+        {
+            int bestScore = gameState.CurrentPlayer == 1 ? int.MinValue : int.MaxValue;
+            int alpha = int.MinValue;
+            int beta = int.MaxValue;
+            int currentBestMove = -1;
+            Dictionary<int, int> currentIterationScores = new();
+
+            List<int> moves = gameState.GetValidMoves();
+
+            if (ApplyMoveOrdering)
+            {
+                OrderMoves(moves);
+            }
+
+            // Sort all root moves by their scores from the previous iteration so the
+            // most promising moves are searched first, tightening alpha/beta earlier
+            // Moves not scored in the previous iteration (pruned) default to 0
+            if (prevIterationScores.Count > 0)
+            {
+                moves.Sort((a, b) =>
+                {
+                    int scoreA = prevIterationScores.GetValueOrDefault(a, 0);
+                    int scoreB = prevIterationScores.GetValueOrDefault(b, 0);
+                    return gameState.CurrentPlayer == 1
+                        ? scoreB.CompareTo(scoreA)  // maximiser: highest score first
+                        : scoreA.CompareTo(scoreB); // minimiser: lowest score first
+                });
+            }
+
+            foreach (int move in moves)
+            {
+                gameState.ApplyMove(move);
+                int score = MiniMaxRecursive(gameState, currentDepth - 1, alpha, beta);
+                gameState.UndoLastMove();
+
+                currentIterationScores[move] = score;
+
+                if ((gameState.CurrentPlayer == 1 && score > bestScore)
+                    || (gameState.CurrentPlayer == -1 && score < bestScore))
+                {
+                    bestScore = score;
+                    currentBestMove = move;
+                }
+
+                if (gameState.CurrentPlayer == 1)
+                    alpha = Math.Max(alpha, bestScore);
+                else
+                    beta = Math.Min(beta, bestScore);
+            }
+
+            // Only update if the iteration produced a result
+            if (currentBestMove != -1)
+            {
+                bestMove = currentBestMove;
+                prevIterationScores = currentIterationScores;
             }
         }
 
