@@ -31,11 +31,7 @@ public class AlphaBetaMiniMax : IMiniMax
 
         // If it's player 1s turn we want to maximise the score,
         // if it's player -1s turn we want to minimise the score
-        int bestScore = int.MinValue;
-        if (gameState.CurrentPlayer == -1)
-        {
-            bestScore = int.MaxValue;
-        }
+        int bestScore = gameState.CurrentPlayer == 1 ? int.MinValue : int.MaxValue;
 
         int alpha = int.MinValue;
         int beta = int.MaxValue;
@@ -83,22 +79,22 @@ public class AlphaBetaMiniMax : IMiniMax
     {
         _nodesVisited = 0;
 
-        // Clear once at the start so TT entries carry over between depth iterations,
-        // allowing shallower searches to improve pruning in deeper ones
         _transpositionTable.Clear();
 
         int bestMove = -1;
 
-        // Scores from the previous iteration, used to order moves for the next one
-        Dictionary<int, int> prevIterationScores = new();
+        var prevIterationScores = new Dictionary<int, int>();
 
         for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
         {
             int bestScore = gameState.CurrentPlayer == 1 ? int.MinValue : int.MaxValue;
+
             int alpha = int.MinValue;
             int beta = int.MaxValue;
+
             int currentBestMove = -1;
-            Dictionary<int, int> currentIterationScores = new();
+
+            var currentIterationScores = new Dictionary<int, int>();
 
             List<int> moves = gameState.GetValidMoves();
 
@@ -108,8 +104,8 @@ public class AlphaBetaMiniMax : IMiniMax
             }
 
             // Sort all root moves by their scores from the previous iteration so the
-            // most promising moves are searched first, tightening alpha/beta earlier
-            // Moves not scored in the previous iteration (pruned) default to 0
+            // most promising moves are searched first.
+            // Pruned moves not scored in the previous iteration default to 0
             if (prevIterationScores.Count > 0)
             {
                 moves.Sort((a, b) =>
@@ -137,10 +133,15 @@ public class AlphaBetaMiniMax : IMiniMax
                     currentBestMove = move;
                 }
 
+                // Update alpha or beta so we can prune at the root
                 if (gameState.CurrentPlayer == 1)
+                {
                     alpha = Math.Max(alpha, bestScore);
+                }
                 else
+                {
                     beta = Math.Min(beta, bestScore);
+                }
             }
 
             // Only update if the iteration produced a result

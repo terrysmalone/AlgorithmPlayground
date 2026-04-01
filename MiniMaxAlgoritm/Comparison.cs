@@ -6,7 +6,7 @@ internal class Comparison
 {
     public static void Main(string[] args)
     {
-        int depth = 7;
+        int depth = 8;
 
         int[,] emptyBoard = new int[6, 7];
         GameState emptyBoardgameState = new GameState();
@@ -37,17 +37,24 @@ internal class Comparison
         int bestMove = minimax.FindBestMove(gameState, depth);
         Console.WriteLine($"Best move: {bestMove} - Nodes visited: {minimax.GetNodesVisited()} - MiniMax");
 
-        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: false, transpositionTable: false, "AlphaBeta");
-        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: true, transpositionTable: false, "AlphaBeta + MoveOrdering");
-        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: false, transpositionTable: true, "AlphaBeta + TranspositionTable");
-        RunAlphaBetaMiniMax(gameState.Clone(), depth, moveOrdering: true, transpositionTable: true, "AlphaBeta + MoveOrdering + TranspositionTable");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, iterativeDeepening: false, moveOrdering: false, transpositionTable: false, "AlphaBeta");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, iterativeDeepening: false, moveOrdering: true, transpositionTable: false, "AlphaBeta + MoveOrdering");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, iterativeDeepening: false, moveOrdering: false, transpositionTable: true, "AlphaBeta + TranspositionTable");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, iterativeDeepening: false, moveOrdering: true, transpositionTable: true, "AlphaBeta + MoveOrdering + TranspositionTable");
+
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, iterativeDeepening: true, moveOrdering: false, transpositionTable: false, "AlphaBeta with iterative deepening");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, iterativeDeepening: true, moveOrdering: true, transpositionTable: false, "AlphaBeta with iterative + MoveOrdering");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, iterativeDeepening: true, moveOrdering: false, transpositionTable: true, "AlphaBeta with iterative + TranspositionTable");
+        RunAlphaBetaMiniMax(gameState.Clone(), depth, iterativeDeepening: true, moveOrdering: true, transpositionTable: true, "AlphaBeta with iterative + MoveOrdering + TranspositionTable");
+
     }
 
-    private static void RunAlphaBetaMiniMax(GameState gameState, int depth, bool moveOrdering, bool transpositionTable, string title)
+    private static void RunAlphaBetaMiniMax(GameState gameState, int depth, bool iterativeDeepening, bool moveOrdering, bool transpositionTable, string title)
     {
         AlphaBetaMiniMax alphaBeta = new AlphaBetaMiniMax();
         alphaBeta.ApplyMoveOrdering = moveOrdering;
         alphaBeta.ApplyTranspositionTable = transpositionTable;
+        alphaBeta.ApplyIterativeDeepening = iterativeDeepening;
 
         int bestMove = alphaBeta.FindBestMove(gameState, depth);
         Console.WriteLine($"Best move: {bestMove} - Nodes visited: {alphaBeta.GetNodesVisited()} - {title}");
