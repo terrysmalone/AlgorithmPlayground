@@ -16,6 +16,7 @@ public class GameState
     private List<Point[]> _windows = new List<Point[]>();
 
     private const int TERMINAL_SCORE = 10000;
+    private const int PLAYABLE_THREE_OF_FOUR_SCORE = 1000;
     private const int THREE_OF_FOUR_SCORE = 100;
     private const int TWO_OF_FOUR_SCORE = 30;
     private const int CENTRAL_COLUMNS_SCORE = 3;
@@ -69,10 +70,10 @@ public class GameState
             {
                 _windows.Add(new Point[]
                 {
-                    new Point(row, column),
-                    new Point(row, column + 1),
-                    new Point(row, column + 2),
-                    new Point(row, column + 3),
+                    new Point(column, row),
+                    new Point(column + 1, row),
+                    new Point(column + 2, row),
+                    new Point(column + 3, row),
                 });
             }
         }
@@ -84,10 +85,10 @@ public class GameState
             {
                 _windows.Add(new Point[]
                 {
-                    new Point(row, column),
-                    new Point(row + 1, column),
-                    new Point(row + 2, column),
-                    new Point(row + 3, column),
+                    new Point(column, row),
+                    new Point(column, row + 1),
+                    new Point(column, row + 2),
+                    new Point(column, row + 3),
                 });
 
             }
@@ -99,10 +100,10 @@ public class GameState
             {
                 _windows.Add(new Point[]
                 {
-                    new Point(row, column),
-                    new Point(row + 1, column + 1),
-                    new Point(row + 2, column + 2),
-                    new Point(row + 3, column + 3),
+                    new Point(column, row),
+                    new Point(column + 1, row + 1),
+                    new Point(column + 2, row + 2),
+                    new Point(column + 3, row + 3),
                 });
             }
         }
@@ -113,10 +114,10 @@ public class GameState
             {
                 _windows.Add(new Point[]
                 {
-                    new Point(row, column),
-                    new Point(row - 1, column + 1),
-                    new Point(row - 2, column + 2),
-                    new Point(row - 3, column + 3),
+                    new Point(column, row),
+                    new Point(column + 1, row - 1),
+                    new Point(column + 2, row - 2),
+                    new Point(column + 3, row - 3),
                 });
             }
         }
@@ -180,11 +181,11 @@ public class GameState
     {
         var newState = new GameState(_rows, _columns, _zobristSeed);
 
-        for (int i = 0; i < _board.GetLength(0); i++)
+        for (int row = 0; row < _board.GetLength(0); row++)
         {
-            for (int j = 0; j < _board.GetLength(1); j++)
+            for (int column = 0; column < _board.GetLength(1); column++)
             {
-                newState._board[i, j] = _board[i, j];
+                newState._board[row, column] = _board[row, column];
             }
         }
 
@@ -371,12 +372,17 @@ public class GameState
         int player2Count = 0;
         int emptyCount = 0;
 
+        int emptyRow = 0;
+        int emptyColumn = 0;
+
         foreach (Point point in window)
         {
-            switch (_board[point.X, point.Y])
+            switch (_board[point.Y, point.X])
             {
                 case 0:
                     emptyCount++;
+                    emptyRow = point.Y;
+                    emptyColumn = point.X;
                     break;
                 case 1:
                     player1Count++;
@@ -389,7 +395,14 @@ public class GameState
 
         if (player1Count == 3 && emptyCount == 1)
         {
-            score += THREE_OF_FOUR_SCORE;
+            if(IsPlayable(emptyRow, emptyColumn))
+            {
+                score += PLAYABLE_THREE_OF_FOUR_SCORE;
+            }
+            else
+            {
+                score += THREE_OF_FOUR_SCORE;
+            }
         }
         else if (player1Count == 2 && emptyCount == 2)
         {
@@ -397,7 +410,14 @@ public class GameState
         }
         else if (player2Count == 3 && emptyCount == 1)
         {
-            score -= THREE_OF_FOUR_SCORE;
+            if (IsPlayable(emptyRow, emptyColumn))
+            {
+                score -= PLAYABLE_THREE_OF_FOUR_SCORE;
+            }
+            else
+            {
+                score -= THREE_OF_FOUR_SCORE;
+            }
         }
         else if (player2Count == 2 && emptyCount == 2)
         {
@@ -405,6 +425,11 @@ public class GameState
         }
 
         return score;
+    }
+
+    private bool IsPlayable(int emptyRow, int emptyColumn)
+    {
+        return false;
     }
 
     private void RecomputeHash()
