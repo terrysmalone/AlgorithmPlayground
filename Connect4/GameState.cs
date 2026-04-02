@@ -279,7 +279,7 @@ public class GameState
                 int player = _board[row, column];
 
                 // Horizontal
-                if (column <= 3 &&
+                if (column <= _columns - 4 &&
                     player == _board[row, column + 1] &&
                     player == _board[row, column + 2] &&
                     player == _board[row, column + 3])
@@ -288,7 +288,7 @@ public class GameState
                 }
 
                 // Vertical
-                if (row <= 2 &&
+                if (row <= _rows - 4 &&
                     player == _board[row + 1, column] &&
                     player == _board[row + 2, column] &&
                     player == _board[row + 3, column])
@@ -297,7 +297,7 @@ public class GameState
                 }
 
                 // Diagonal down-right
-                if (row <= 2 && column <= 3 &&
+                if (row <= _rows - 4 && column <= _columns - 4 &&
                     player == _board[row + 1, column + 1] &&
                     player == _board[row + 2, column + 2] &&
                     player == _board[row + 3, column + 3])
@@ -306,7 +306,7 @@ public class GameState
                 }
 
                 // Diagonal up-right
-                if (row >= 3 && column <= 3 &&
+                if (row >= Math.Max(_rows - 4, 3) && column <= _columns - 4 &&
                     player == _board[row - 1, column + 1] &&
                     player == _board[row - 2, column + 2] &&
                     player == _board[row - 3, column + 3])
